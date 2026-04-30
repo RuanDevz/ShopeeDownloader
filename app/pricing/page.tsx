@@ -10,15 +10,15 @@ export default async function PricingPage() {
     <div className="min-h-screen bg-gray-50">
       <Navbar user={user} />
 
-      <main className="max-w-4xl mx-auto px-4 py-16">
-        <div className="text-center mb-12">
-          <h1 className="text-3xl font-bold text-gray-900 mb-3">Planos simples e transparentes</h1>
-          <p className="text-gray-500 text-lg">Escolha o plano ideal para você</p>
+      <main className="max-w-4xl mx-auto px-4 py-8 sm:py-16">
+        <div className="text-center mb-8 sm:mb-12">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">Planos simples e transparentes</h1>
+          <p className="text-gray-500 text-base sm:text-lg">Escolha o plano ideal para você</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
           {/* Free Plan */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm">
+          <div className="bg-white rounded-2xl border border-gray-200 p-6 sm:p-8 shadow-sm">
             <div className="mb-6">
               <h2 className="text-lg font-bold text-gray-900 mb-1">Gratuito</h2>
               <p className="text-3xl font-bold text-gray-900">
@@ -60,7 +60,7 @@ export default async function PricingPage() {
           </div>
 
           {/* Premium Plan */}
-          <div className="bg-white rounded-2xl border-2 border-[#EE4D2D] p-8 shadow-lg relative">
+          <div className="bg-white rounded-2xl border-2 border-[#EE4D2D] p-6 sm:p-8 shadow-lg relative">
             <div className="absolute -top-3 left-1/2 -translate-x-1/2">
               <span className="bg-[#EE4D2D] text-white text-xs font-bold px-4 py-1.5 rounded-full">
                 MAIS POPULAR

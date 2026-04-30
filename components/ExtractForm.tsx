@@ -70,10 +70,10 @@ export default function ExtractForm({ isLoggedIn = false, large = false }: Extra
 
   return (
     <div className="w-full space-y-4">
-      <div className="flex gap-3">
+      <div className={`flex gap-3 ${large ? 'flex-col sm:flex-row' : 'flex-row'}`}>
         <input
           className={inputClass}
-          placeholder="Cole o link do Shopee aqui... (shp.ee/... ou shopee.com.br/...)"
+          placeholder="Cole o link do Shopee aqui..."
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && !isPending && handleExtract()}
@@ -83,7 +83,7 @@ export default function ExtractForm({ isLoggedIn = false, large = false }: Extra
           loading={isPending}
           disabled={!url.trim()}
           size={large ? 'lg' : 'md'}
-          className="shrink-0"
+          className={large ? 'w-full sm:w-auto shrink-0' : 'shrink-0'}
         >
           {isPending ? 'Extraindo...' : 'Extrair'}
         </Button>

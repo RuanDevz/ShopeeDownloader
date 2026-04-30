@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Button from './ui/Button'
 import Card from './ui/Card'
@@ -19,14 +19,23 @@ export default function VideoPreview({ data }: VideoPreviewProps) {
   const [downloading, setDownloading] = useState(false)
   const [copied, setCopied] = useState(false)
   const [dlError, setDlError] = useState('')
+  const [canShare, setCanShare] = useState(false)
+
+  useEffect(() => {
+    // Detect if the browser supports sharing files (mobile Web Share API)
+    try {
+      const testFile = new File([''], 'test.mp4', { type: 'video/mp4' })
+      setCanShare('share' in navigator && 'canShare' in navigator && navigator.canShare({ files: [testFile] }))
+    } catch {
+      setCanShare(false)
+    }
+  }, [])
 
   async function handleDownload() {
     setDownloading(true)
     setDlError('')
     try {
-      const res = await fetch(
-        `/api/download?url=${encodeURIComponent(data.videoUrl)}`
-      )
+      const res = await fetch(`/api/download?url=${encodeURIComponent(data.videoUrl)}`)
 
       if (!res.ok) {
         const json = await res.json().catch(() => ({}))
@@ -35,6 +44,21 @@ export default function VideoPreview({ data }: VideoPreviewProps) {
       }
 
       const blob = await res.blob()
+
+      // On mobile: use Web Share API → "Salvar na Galeria" option appears
+      if (canShare) {
+        const file = new File([blob], 'shopee-video.mp4', { type: 'video/mp4' })
+        try {
+          await navigator.share({ files: [file], title: data.caption || 'Vídeo Shopee' })
+          return
+        } catch (e) {
+          // User cancelled share sheet — don't show error
+          if (e instanceof Error && e.name === 'AbortError') return
+          // Share failed, fall through to regular download
+        }
+      }
+
+      // Desktop / fallback: trigger <a download>
       const objectUrl = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = objectUrl
@@ -54,15 +78,15 @@ export default function VideoPreview({ data }: VideoPreviewProps) {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {
-      // fallback
+      // fallback silent
     }
   }
 
   return (
     <Card className="overflow-hidden">
-      <div className="flex flex-col sm:flex-row gap-5">
+      <div className="flex flex-col sm:flex-row gap-4">
         {data.cover && (
-          <div className="relative w-full sm:w-40 h-48 sm:h-40 shrink-0 rounded-xl overflow-hidden bg-gray-100">
+          <div className="relative w-full sm:w-40 h-52 sm:h-40 shrink-0 rounded-xl overflow-hidden bg-gray-100">
             <Image
               src={data.cover}
               alt="Capa do vídeo"
@@ -80,15 +104,15 @@ export default function VideoPreview({ data }: VideoPreviewProps) {
             </p>
           )}
 
-          <div className="flex flex-wrap gap-2 mt-auto">
-            <Button onClick={handleDownload} loading={downloading} size="md">
+          <div className="flex flex-col sm:flex-row gap-2 mt-auto">
+            <Button onClick={handleDownload} loading={downloading} size="md" className="w-full sm:w-auto">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
               </svg>
-              {downloading ? 'Baixando...' : 'Baixar Vídeo'}
+              {downloading ? 'Baixando...' : canShare ? 'Salvar na Galeria' : 'Baixar Vídeo'}
             </Button>
 
-            <Button variant="outline" size="md" onClick={handleCopy}>
+            <Button variant="outline" size="md" onClick={handleCopy} className="w-full sm:w-auto">
               {copied ? (
                 <>
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
