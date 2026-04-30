@@ -1,0 +1,117 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ──────────────────────────────────────────
+// Usuários — gerenciado pelo próprio backend
+// ──────────────────────────────────────────
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  avatarUrl String?  @map("avatar_url")
+  googleId  String?  @unique @map("google_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  subscription    Subscription?
+  usageLogs       UsageLog[]
+  downloadHistory DownloadHistory[]
+  payments        Payment[]
+
+  @@map("users")
+}
+
+// ──────────────────────────────────────────
+// Quota de usuários anônimos (por hash de IP)
+// ──────────────────────────────────────────
+model AnonymousUsageLog {
+  id            String   @id @default(cuid())
+  ipHash        String   @map("ip_hash")
+  date          DateTime @db.Date
+  downloadCount Int      @default(0) @map("download_count")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@unique([ipHash, date])
+  @@index([ipHash])
+  @@map("anonymous_usage_logs")
+}
+
+// ──────────────────────────────────────────
+// Plano de assinatura do usuário
+// ──────────────────────────────────────────
+model Subscription {
+  id           String    @id @default(cuid())
+  userId       String    @unique @map("user_id")
+  plan         Plan      @default(FREE)
+  premiumUntil DateTime? @map("premium_until")
+  mpPaymentId  String?   @map("mp_payment_id")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+// ──────────────────────────────────────────
+// Contador de downloads por dia por usuário
+// ──────────────────────────────────────────
+model UsageLog {
+  id            String   @id @default(cuid())
+  userId        String   @map("user_id")
+  date          DateTime @db.Date @map("date")
+  downloadCount Int      @default(0) @map("download_count")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@index([userId])
+  @@map("usage_logs")
+}
+
+// ──────────────────────────────────────────
+// Histórico de vídeos baixados
+// ──────────────────────────────────────────
+model DownloadHistory {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  originalUrl String   @map("original_url")
+  videoUrl    String   @map("video_url")
+  cover       String?
+  caption     String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("download_history")
+}
+
+// ──────────────────────────────────────────
+// Registro de pagamentos PIX
+// ──────────────────────────────────────────
+model Payment {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  mpPaymentId String   @unique @map("mp_payment_id")
+  status      String   @default("pending")
+  amount      Decimal  @db.Decimal(10, 2)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("payments")
+}
+
+enum Plan {
+  FREE
+  PREMIUM
+}
