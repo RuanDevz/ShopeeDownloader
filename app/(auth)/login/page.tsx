@@ -2,7 +2,22 @@ import Link from 'next/link'
 import Card from '@/components/ui/Card'
 import GoogleSignInButton from '@/components/GoogleSignInButton'
 
-export default function LoginPage() {
+const ERROR_MESSAGES: Record<string, string> = {
+  cancelled: 'Login cancelado. Tente novamente.',
+  no_code: 'Resposta inválida do Google. Tente novamente.',
+  no_state_cookie: 'Cookie de sessão perdido. Tente novamente (não abra o link em outra aba).',
+  invalid_state: 'Falha de segurança CSRF. Tente novamente.',
+  auth: 'Erro ao autenticar com o Google. Tente novamente.',
+}
+
+interface LoginPageProps {
+  searchParams: Promise<{ error?: string }>
+}
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const { error } = await searchParams
+  const errorMsg = error ? (ERROR_MESSAGES[error] ?? 'Erro desconhecido. Tente novamente.') : null
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-white flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
@@ -22,6 +37,12 @@ export default function LoginPage() {
         </div>
 
         <Card>
+          {errorMsg && (
+            <div className="mb-4 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+              <p className="text-sm text-red-600">{errorMsg}</p>
+            </div>
+          )}
+
           <GoogleSignInButton />
 
           <div className="mt-6 pt-5 border-t border-gray-100 text-center space-y-2">

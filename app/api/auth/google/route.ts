@@ -19,21 +19,11 @@ export async function GET(request: NextRequest) {
 
   const response = NextResponse.redirect(`${GOOGLE_AUTH_URL}?${params}`)
 
-  response.cookies.set('oauth_state', state, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 600,
-    path: '/',
-  })
-
-  response.cookies.set('oauth_next', next, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 600,
-    path: '/',
-  })
+  // Usa headers.append para garantir que os cookies são setados no redirect
+  const secure = process.env.NODE_ENV === 'production'
+  const base = `HttpOnly; SameSite=Lax; Max-Age=600; Path=/${secure ? '; Secure' : ''}`
+  response.headers.append('Set-Cookie', `oauth_state=${state}; ${base}`)
+  response.headers.append('Set-Cookie', `oauth_next=${encodeURIComponent(next)}; ${base}`)
 
   return response
 }

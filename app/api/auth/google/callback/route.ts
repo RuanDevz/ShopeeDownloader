@@ -21,10 +21,27 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const code = searchParams.get('code')
   const state = searchParams.get('state')
+  const googleError = searchParams.get('error')
   const storedState = request.cookies.get('oauth_state')?.value
   const next = request.cookies.get('oauth_next')?.value ?? '/dashboard'
 
-  if (!code || !state || state !== storedState) {
+  // Google retornou um erro (ex: usuário cancelou o login)
+  if (googleError) {
+    return NextResponse.redirect(new URL('/login?error=cancelled', request.url))
+  }
+
+  // Código ausente
+  if (!code) {
+    return NextResponse.redirect(new URL('/login?error=no_code', request.url))
+  }
+
+  // State não chegou da requisição (cookie ausente = provável problema de cookie SameSite)
+  if (!storedState) {
+    return NextResponse.redirect(new URL('/login?error=no_state_cookie', request.url))
+  }
+
+  // Verifica CSRF
+  if (state !== storedState) {
     return NextResponse.redirect(new URL('/login?error=invalid_state', request.url))
   }
 
@@ -85,7 +102,6 @@ export async function GET(request: NextRequest) {
         return created
       })
     } else {
-      // Atualiza dados do Google se necessário
       await prisma.user.update({
         where: { id: user.id },
         data: {
