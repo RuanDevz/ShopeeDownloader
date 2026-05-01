@@ -34,12 +34,20 @@ export async function POST(_request: NextRequest) {
 
     return Response.json({ success: true, data: result })
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Erro ao gerar PIX'
+    let message = 'Erro ao gerar PIX'
+
+    if (error instanceof Error) {
+      message = error.message
+    } else if (typeof error === 'object' && error !== null) {
+      const e = error as Record<string, unknown>
+      message = String(e.message ?? e.error ?? e.cause ?? JSON.stringify(error))
+    }
 
     if (message === 'Unauthorized') {
       return Response.json({ success: false, error: 'Não autenticado' }, { status: 401 })
     }
 
+    console.error('[checkout] MercadoPago error:', error)
     return Response.json({ success: false, error: message }, { status: 500 })
   }
 }
