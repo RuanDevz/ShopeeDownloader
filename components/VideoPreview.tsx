@@ -18,16 +18,14 @@ interface VideoPreviewProps {
 export default function VideoPreview({ data }: VideoPreviewProps) {
   const [downloading, setDownloading] = useState(false)
   const [dlError, setDlError] = useState('')
-  const [canShare, setCanShare] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
-    // Detect if the browser supports sharing files (mobile Web Share API)
-    try {
-      const testFile = new File([''], 'test.mp4', { type: 'video/mp4' })
-      setCanShare('share' in navigator && 'canShare' in navigator && navigator.canShare({ files: [testFile] }))
-    } catch {
-      setCanShare(false)
-    }
+    // Detecta se é mobile
+    const userAgent = navigator.userAgent.toLowerCase()
+    const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent)
+    const hasWebShare = 'share' in navigator && 'canShare' in navigator
+    setIsMobile(isMobileDevice && hasWebShare)
   }, [])
 
   async function handleDownload() {
@@ -44,31 +42,36 @@ export default function VideoPreview({ data }: VideoPreviewProps) {
 
       const blob = await res.blob()
 
-      // On mobile: use Web Share API → "Salvar na Galeria" option appears
-      if (canShare) {
+      // Mobile: Abre direto na galeria do celular
+      if (isMobile) {
         const file = new File([blob], 'shopee-video.mp4', { type: 'video/mp4' })
         try {
           await navigator.share({ files: [file], title: data.caption || 'Vídeo Shopee' })
-          return
         } catch (e) {
-          // User cancelled share sheet — don't show error
-          if (e instanceof Error && e.name === 'AbortError') return
-          // Share failed, fall through to regular download
+          // Se o usuário cancelou ou houve erro, faz fallback para download
+          if (e instanceof Error && e.name !== 'AbortError') {
+            downloadToDevice(blob)
+          }
         }
+        return
       }
 
-      // Desktop / fallback: trigger <a download>
-      const objectUrl = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = objectUrl
-      a.download = 'shopee-video.mp4'
-      a.click()
-      URL.revokeObjectURL(objectUrl)
+      // Desktop: Download imediato
+      downloadToDevice(blob)
     } catch {
       setDlError('Falha na conexão. Tente novamente.')
     } finally {
       setDownloading(false)
     }
+  }
+
+  function downloadToDevice(blob: Blob) {
+    const objectUrl = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = objectUrl
+    a.download = 'shopee-video.mp4'
+    a.click()
+    URL.revokeObjectURL(objectUrl)
   }
 
   return (
@@ -98,7 +101,7 @@ export default function VideoPreview({ data }: VideoPreviewProps) {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
               </svg>
-              {downloading ? 'Baixando...' : canShare ? 'Salvar na Galeria' : 'Baixar Vídeo'}
+              {downloading ? 'Baixando...' : isMobile ? 'Salvar na Galeria' : 'Baixar Vídeo'}
             </Button>
           </div>
 
