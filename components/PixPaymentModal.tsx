@@ -13,9 +13,12 @@ interface PixData {
 interface PixPaymentModalProps {
   onClose: () => void
   onSuccess?: () => void
+  plan?: 'monthly' | 'annual'
 }
 
-export default function PixPaymentModal({ onClose, onSuccess }: PixPaymentModalProps) {
+export default function PixPaymentModal({ onClose, onSuccess, plan = 'monthly' }: PixPaymentModalProps) {
+  const planLabel = plan === 'annual' ? 'R$ 60,00 / ano' : 'R$ 8,00 / mês'
+  const accessLabel = plan === 'annual' ? 'Acesso por 365 dias' : 'Acesso por 30 dias'
   const [step, setStep] = useState<'loading' | 'qr' | 'checking' | 'success' | 'error'>('loading')
   const [pixData, setPixData] = useState<PixData | null>(null)
   const [copied, setCopied] = useState(false)
@@ -28,7 +31,11 @@ export default function PixPaymentModal({ onClose, onSuccess }: PixPaymentModalP
 
     async function generate() {
       try {
-        const res = await fetch('/api/checkout', { method: 'POST' })
+        const res = await fetch('/api/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ plan }),
+        })
         const json = await res.json()
 
         if (!cancelled) {
@@ -128,7 +135,7 @@ export default function PixPaymentModal({ onClose, onSuccess }: PixPaymentModalP
         <div className="bg-[#EE4D2D] px-6 py-4 flex items-center justify-between">
           <div>
             <h2 className="text-white font-bold text-lg">Ativar Premium</h2>
-            <p className="text-orange-100 text-sm">R$ 19,90 / 30 dias</p>
+            <p className="text-orange-100 text-sm">{planLabel}</p>
           </div>
           <button
             onClick={onClose}
@@ -152,7 +159,7 @@ export default function PixPaymentModal({ onClose, onSuccess }: PixPaymentModalP
             <div className="flex flex-col items-center gap-5">
               {/* Benefits */}
               <div className="w-full bg-green-50 rounded-xl p-4 space-y-1.5">
-                {['Downloads ilimitados', 'Sem limite diário', 'Acesso por 30 dias'].map((b) => (
+                {['Downloads ilimitados', 'Sem limite diário', accessLabel].map((b) => (
                   <div key={b} className="flex items-center gap-2 text-sm text-green-700">
                     <svg className="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -214,7 +221,7 @@ export default function PixPaymentModal({ onClose, onSuccess }: PixPaymentModalP
               </div>
               <div className="text-center">
                 <p className="font-bold text-gray-900 text-lg">Pagamento confirmado!</p>
-                <p className="text-sm text-gray-500 mt-1">Seu Premium está ativo por 30 dias.</p>
+                <p className="text-sm text-gray-500 mt-1">Seu Premium está ativo. {accessLabel}.</p>
               </div>
             </div>
           )}

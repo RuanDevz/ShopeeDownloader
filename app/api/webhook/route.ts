@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { getMpClient, PREMIUM_DAYS } from '@/lib/mercadopago'
+import { getMpClient, PLAN_CONFIG, type PlanType } from '@/lib/mercadopago'
 import { Payment } from 'mercadopago'
 import { prisma } from '@/lib/prisma'
 import { Plan } from '@/lib/generated/prisma/client'
@@ -60,7 +60,9 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: 'No user_id' }, { status: 400 })
     }
 
-    const premiumUntil = new Date(Date.now() + PREMIUM_DAYS * 24 * 60 * 60 * 1000)
+    const plan = (payment.metadata?.plan as PlanType | undefined) ?? 'monthly'
+    const days = PLAN_CONFIG[plan]?.days ?? PLAN_CONFIG.monthly.days
+    const premiumUntil = new Date(Date.now() + days * 24 * 60 * 60 * 1000)
 
     await prisma.$transaction([
       prisma.subscription.upsert({

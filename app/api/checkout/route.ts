@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { requireSession } from '@/lib/auth'
-import { createPixPayment, PREMIUM_PRICE_BRL } from '@/lib/mercadopago'
+import { createPixPayment, PLAN_CONFIG, type PlanType } from '@/lib/mercadopago'
 import { prisma } from '@/lib/prisma'
 import { Plan } from '@/lib/generated/prisma/client'
 
@@ -21,14 +21,17 @@ export async function POST(_request: NextRequest) {
       )
     }
 
-    const result = await createPixPayment(user.email, user.id)
+    const body = await _request.json().catch(() => ({}))
+    const plan: PlanType = body.plan === 'annual' ? 'annual' : 'monthly'
+
+    const result = await createPixPayment(user.email, user.id, plan)
 
     await prisma.payment.create({
       data: {
         userId: user.id,
         mpPaymentId: result.paymentId,
         status: 'pending',
-        amount: PREMIUM_PRICE_BRL,
+        amount: PLAN_CONFIG[plan].price,
       },
     })
 

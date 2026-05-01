@@ -1,7 +1,11 @@
 import { MercadoPagoConfig, Payment } from 'mercadopago'
 
-export const PREMIUM_PRICE_BRL = 19.9
-export const PREMIUM_DAYS = 30
+export type PlanType = 'monthly' | 'annual'
+
+export const PLAN_CONFIG: Record<PlanType, { price: number; days: number; label: string }> = {
+  monthly: { price: 8,  days: 30,  label: 'Plano Mensal — Shopee Video Downloader (30 dias)' },
+  annual:  { price: 60, days: 365, label: 'Plano Anual — Shopee Video Downloader (365 dias)' },
+}
 
 export function getMpClient() {
   return new MercadoPagoConfig({
@@ -15,27 +19,28 @@ export interface PixPaymentResult {
   qrCodeBase64: string
   qrCode: string
   expiresAt: string
+  plan: PlanType
+  days: number
+  price: number
 }
 
 export async function createPixPayment(
   userEmail: string,
-  userId: string
+  userId: string,
+  plan: PlanType = 'monthly'
 ): Promise<PixPaymentResult> {
+  const { price, days, label } = PLAN_CONFIG[plan]
   const client = getMpClient()
   const payment = new Payment(client)
 
   const result = await payment.create({
     body: {
       payment_method_id: 'pix',
-      transaction_amount: PREMIUM_PRICE_BRL,
-      description: 'Plano Premium — Shopee Video Downloader (30 dias)',
-      payer: {
-        email: userEmail,
-      },
-      metadata: {
-        user_id: userId,
-      },
-      date_of_expiration: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // 30 min
+      transaction_amount: price,
+      description: label,
+      payer: { email: userEmail },
+      metadata: { user_id: userId, plan },
+      date_of_expiration: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
     },
   })
 
@@ -49,6 +54,9 @@ export async function createPixPayment(
     qrCodeBase64: txData.qr_code_base64,
     qrCode: txData.qr_code,
     expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+    plan,
+    days,
+    price,
   }
 }
 
