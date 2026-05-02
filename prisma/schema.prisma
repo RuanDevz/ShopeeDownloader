@@ -16,6 +16,7 @@ model User {
   name      String?
   avatarUrl String?  @map("avatar_url")
   googleId  String?  @unique @map("google_id")
+  isAdmin   Boolean  @default(false) @map("is_admin")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 

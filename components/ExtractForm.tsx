@@ -58,6 +58,7 @@ export default function ExtractForm({ isLoggedIn = false, large = false }: Extra
 
         setVideoData(json.data)
         setUsage(json.usage)
+        setUrl('')
       } catch {
         setError('Falha na conexão. Tente novamente.')
       }
