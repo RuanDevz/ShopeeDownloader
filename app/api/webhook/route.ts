@@ -1,9 +1,12 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, after } from 'next/server'
 import { getMpClient, PLAN_CONFIG, type PlanType } from '@/lib/mercadopago'
 import { Payment } from 'mercadopago'
 import { prisma } from '@/lib/prisma'
 import { Plan } from '@/lib/generated/prisma/client'
 import crypto from 'crypto'
+
+// Increase Vercel function timeout to 60s (requires Pro) or 30s (Hobby max)
+export const maxDuration = 60
 
 function verifySignature(request: NextRequest): boolean {
   const secret = process.env.MP_WEBHOOK_SECRET
@@ -11,15 +14,13 @@ function verifySignature(request: NextRequest): boolean {
 
   const xSignature = request.headers.get('x-signature') ?? ''
   const xRequestId = request.headers.get('x-request-id') ?? ''
-
-  // Mercado Livre sends data.id as query param in the URL
   const { searchParams } = new URL(request.url)
   const dataId = searchParams.get('data.id') ?? ''
 
   const parts: Record<string, string> = {}
   for (const part of xSignature.split(',')) {
-    const [k, v] = part.split('=')
-    if (k && v) parts[k.trim()] = v.trim()
+    const idx = part.indexOf('=')
+    if (idx > 0) parts[part.slice(0, idx).trim()] = part.slice(idx + 1).trim()
   }
 
   const ts = parts['ts'] ?? ''
@@ -41,10 +42,68 @@ function verifySignature(request: NextRequest): boolean {
   return true
 }
 
-export async function POST(request: NextRequest) {
-  let rawBody = ''
+async function processPayment(paymentId: string) {
+  let payment
   try {
-    rawBody = await request.text()
+    const client = getMpClient()
+    const paymentApi = new Payment(client)
+    payment = await paymentApi.get({ id: paymentId })
+  } catch (err) {
+    console.error('[webhook] failed to fetch payment from MP API paymentId=%s', paymentId, err)
+    return
+  }
+
+  console.log('[webhook] payment status=%s paymentId=%s metadata=%j', payment.status, paymentId, payment.metadata)
+
+  if (payment.status !== 'approved') {
+    console.log('[webhook] skipping non-approved payment status=%s paymentId=%s', payment.status, paymentId)
+    return
+  }
+
+  // Primary: look up userId from our own payments table — always reliable
+  const localPayment = await prisma.payment.findUnique({
+    where: { mpPaymentId: paymentId },
+    select: { userId: true },
+  })
+
+  // Fallback: try metadata (MP SDK may use snake_case or camelCase)
+  const meta = payment.metadata as Record<string, unknown> | undefined
+  const userId = localPayment?.userId
+    ?? (meta?.user_id ?? meta?.userId) as string | undefined
+
+  if (!userId) {
+    console.error('[webhook] cannot resolve userId for paymentId=%s localPayment=%j meta=%j', paymentId, localPayment, meta)
+    return
+  }
+
+  console.log('[webhook] resolved userId=%s paymentId=%s source=%s', userId, paymentId, localPayment ? 'db' : 'metadata')
+
+  const meta_plan = (meta?.plan as PlanType | undefined) ?? 'monthly'
+  const plan: PlanType = ['monthly', 'annual'].includes(meta_plan) ? meta_plan : 'monthly'
+  const days = PLAN_CONFIG[plan].days
+  const premiumUntil = new Date(Date.now() + days * 24 * 60 * 60 * 1000)
+
+  try {
+    await prisma.$transaction([
+      prisma.subscription.upsert({
+        where: { userId },
+        update: { plan: Plan.PREMIUM, premiumUntil, mpPaymentId: paymentId },
+        create: { userId, plan: Plan.PREMIUM, premiumUntil, mpPaymentId: paymentId },
+      }),
+      prisma.payment.updateMany({
+        where: { mpPaymentId: paymentId },
+        data: { status: 'approved' },
+      }),
+    ])
+    console.log('[webhook] premium activated userId=%s plan=%s until=%s', userId, plan, premiumUntil.toISOString())
+  } catch (err) {
+    console.error('[webhook] DB error userId=%s paymentId=%s', userId, paymentId, err)
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const rawBody = await request.text()
 
     let body: Record<string, unknown>
     try {
@@ -71,47 +130,9 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: 'Invalid payment id' }, { status: 400 })
     }
 
-    let payment
-    try {
-      const client = getMpClient()
-      const paymentApi = new Payment(client)
-      payment = await paymentApi.get({ id: paymentId })
-    } catch (err) {
-      console.error('[webhook] failed to fetch payment from MP API, paymentId=%s error:', paymentId, err)
-      // Return 500 so Mercado Livre retries later
-      return Response.json({ error: 'Failed to fetch payment' }, { status: 500 })
-    }
+    // Respond 200 immediately — process in background so Vercel never times out
+    after(() => processPayment(paymentId))
 
-    console.log('[webhook] payment status=%s paymentId=%s', payment.status, paymentId)
-
-    if (payment.status !== 'approved') {
-      return new Response(null, { status: 200 })
-    }
-
-    const userId = payment.metadata?.user_id as string | undefined
-    if (!userId) {
-      console.error('[webhook] no user_id in payment metadata, paymentId=%s metadata=%j', paymentId, payment.metadata)
-      // Return 200 to avoid infinite retries — this payment cannot be linked to a user
-      return new Response(null, { status: 200 })
-    }
-
-    const plan = (payment.metadata?.plan as PlanType | undefined) ?? 'monthly'
-    const days = PLAN_CONFIG[plan]?.days ?? PLAN_CONFIG.monthly.days
-    const premiumUntil = new Date(Date.now() + days * 24 * 60 * 60 * 1000)
-
-    await prisma.$transaction([
-      prisma.subscription.upsert({
-        where: { userId },
-        update: { plan: Plan.PREMIUM, premiumUntil, mpPaymentId: paymentId },
-        create: { userId, plan: Plan.PREMIUM, premiumUntil, mpPaymentId: paymentId },
-      }),
-      prisma.payment.updateMany({
-        where: { mpPaymentId: paymentId },
-        data: { status: 'approved' },
-      }),
-    ])
-
-    console.log('[webhook] premium activated userId=%s until=%s', userId, premiumUntil.toISOString())
     return new Response(null, { status: 200 })
   } catch (error) {
     console.error('[webhook] unhandled error:', error)
