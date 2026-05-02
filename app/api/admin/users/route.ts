@@ -14,13 +14,10 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const adminUser = await prisma.user.findUnique({
-      where: { id: user.id }
-    })
-
-    if (!adminUser?.isAdmin) {
+    const adminEmail = process.env.ADMIN_EMAIL
+    if (adminEmail && user.email !== adminEmail) {
       return Response.json(
-        { success: false, error: 'Acesso negado. Apenas admins.' },
+        { success: false, error: 'Acesso negado.' },
         { status: 403 }
       )
     }
@@ -45,7 +42,6 @@ export async function GET(request: NextRequest) {
         id: true,
         email: true,
         name: true,
-        isAdmin: true,
         createdAt: true,
         subscription: {
           select: {

@@ -18,13 +18,10 @@ export async function POST(
       )
     }
 
-    const adminUser = await prisma.user.findUnique({
-      where: { id: user.id }
-    })
-
-    if (!adminUser?.isAdmin) {
+    const adminEmail = process.env.ADMIN_EMAIL
+    if (adminEmail && user.email !== adminEmail) {
       return Response.json(
-        { success: false, error: 'Acesso negado. Apenas admins.' },
+        { success: false, error: 'Acesso negado.' },
         { status: 403 }
       )
     }
@@ -87,13 +84,10 @@ export async function DELETE(
       )
     }
 
-    const adminUser = await prisma.user.findUnique({
-      where: { id: user.id }
-    })
-
-    if (!adminUser?.isAdmin) {
+    const adminEmail = process.env.ADMIN_EMAIL
+    if (adminEmail && user.email !== adminEmail) {
       return Response.json(
-        { success: false, error: 'Acesso negado. Apenas admins.' },
+        { success: false, error: 'Acesso negado.' },
         { status: 403 }
       )
     }

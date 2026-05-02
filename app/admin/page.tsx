@@ -9,7 +9,6 @@ interface User {
   id: string
   email: string
   name: string | null
-  isAdmin: boolean
   createdAt: string
   subscription: {
     plan: string
@@ -166,7 +165,6 @@ export default function AdminPanel() {
                     <th className="px-4 py-3 text-left font-semibold text-gray-900">Nome</th>
                     <th className="px-4 py-3 text-left font-semibold text-gray-900">Status</th>
                     <th className="px-4 py-3 text-left font-semibold text-gray-900">Premium Até</th>
-                    <th className="px-4 py-3 text-left font-semibold text-gray-900">Admin</th>
                     <th className="px-4 py-3 text-left font-semibold text-gray-900">Ações</th>
                   </tr>
                 </thead>
@@ -193,13 +191,6 @@ export default function AdminPanel() {
                           </span>
                         </td>
                         <td className="px-4 py-3 text-gray-600">{premiumUntilDate}</td>
-                        <td className="px-4 py-3">
-                          {user.isAdmin && (
-                            <span className="inline-block px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-semibold">
-                              Admin
-                            </span>
-                          )}
-                        </td>
                         <td className="px-4 py-3">
                           <div className="flex gap-2">
                             {!isPremium && (
