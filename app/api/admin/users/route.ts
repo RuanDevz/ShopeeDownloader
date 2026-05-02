@@ -32,13 +32,15 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search') ?? ''
 
     // Lista usuários com suas subscriptions
+    const whereClause = search ? {
+      OR: [
+        { email: { contains: search, mode: 'insensitive' as const } },
+        { name: { contains: search, mode: 'insensitive' as const } }
+      ]
+    } : undefined
+
     const users = await prisma.user.findMany({
-      where: search ? {
-        OR: [
-          { email: { contains: search, mode: 'insensitive' } },
-          { name: { contains: search, mode: 'insensitive' } }
-        ]
-      } : {},
+      where: whereClause,
       select: {
         id: true,
         email: true,
@@ -57,16 +59,7 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' }
     })
 
-    const total = await prisma.user.count(
-      search ? {
-        where: {
-          OR: [
-            { email: { contains: search, mode: 'insensitive' } },
-            { name: { contains: search, mode: 'insensitive' } }
-          ]
-        }
-      } : {}
-    )
+    const total = await prisma.user.count(whereClause ? { where: whereClause } : undefined)
 
     return Response.json({
       success: true,
