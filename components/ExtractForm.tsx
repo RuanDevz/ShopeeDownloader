@@ -34,17 +34,19 @@ export default function ExtractForm({ isLoggedIn = false, large = false }: Extra
   const [isPending, startTransition] = useTransition()
 
   function handleExtract() {
-    if (!url.trim()) return
+    const trimmed = url.trim()
+    if (!trimmed) return
     setError('')
     setVideoData(null)
     setShowAuthPrompt(false)
+    setUrl('')
 
     startTransition(async () => {
       try {
         const res = await fetch('/api/extract', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url }),
+          body: JSON.stringify({ url: trimmed }),
         })
 
         const json = await res.json()
@@ -58,7 +60,6 @@ export default function ExtractForm({ isLoggedIn = false, large = false }: Extra
 
         setVideoData(json.data)
         setUsage(json.usage)
-        setUrl('')
       } catch {
         setError('Falha na conexão. Tente novamente.')
       }

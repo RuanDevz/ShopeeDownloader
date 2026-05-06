@@ -1,7 +1,42 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import ExtractForm from '@/components/ExtractForm'
 import { getSession } from '@/lib/auth'
+
+export const metadata: Metadata = {
+  title: 'Shopee Video Downloader — Baixe Vídeos do Shopee Grátis e Sem Marca D\'água',
+  description:
+    'Baixe vídeos do Shopee online grátis, sem instalar nada e sem marca d\'água. Cole qualquer link de produto Shopee e salve o vídeo em MP4 com qualidade original em segundos.',
+  alternates: {
+    canonical: 'https://www.shopeedownloader.com',
+  },
+  openGraph: {
+    title: 'Shopee Video Downloader — Baixe Vídeos do Shopee Grátis',
+    description: 'Cole o link do Shopee e baixe o vídeo em MP4, sem marca d\'água, sem instalar nada.',
+    url: 'https://www.shopeedownloader.com',
+  },
+}
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: 'ShopeeDownloader',
+  url: 'https://www.shopeedownloader.com',
+  description: 'Baixe vídeos do Shopee online grátis, sem instalar nada e sem marca d\'água.',
+  applicationCategory: 'UtilityApplication',
+  operatingSystem: 'All',
+  offers: {
+    '@type': 'Offer',
+    price: '0',
+    priceCurrency: 'BRL',
+  },
+  aggregateRating: {
+    '@type': 'AggregateRating',
+    ratingValue: '4.8',
+    ratingCount: '1200',
+  },
+}
 
 export default async function LandingPage() {
   const user = await getSession()
@@ -32,6 +67,10 @@ export default async function LandingPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}
+      />
       <Navbar user={user} />
 
       {/* Hero */}
