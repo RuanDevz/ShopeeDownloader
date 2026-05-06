@@ -1,12 +1,11 @@
-import { NextRequest, after } from 'next/server'
+import { NextRequest } from 'next/server'
 import { getMpClient, PLAN_CONFIG, type PlanType } from '@/lib/mercadopago'
 import { Payment } from 'mercadopago'
 import { prisma } from '@/lib/prisma'
 import { Plan } from '@/lib/generated/prisma/client'
 import crypto from 'crypto'
 
-// Increase Vercel function timeout to 60s (requires Pro) or 30s (Hobby max)
-export const maxDuration = 60
+export const maxDuration = 10
 
 function verifySignature(request: NextRequest): boolean {
   const secret = process.env.MP_WEBHOOK_SECRET
@@ -31,11 +30,16 @@ function verifySignature(request: NextRequest): boolean {
     return false
   }
 
-  const manifest = `id:${dataId};request-id:${xRequestId};ts:${ts};`
+  // Per MP docs: omit fields not present in the notification
+  let manifest = ''
+  if (dataId) manifest += `id:${dataId};`
+  if (xRequestId) manifest += `request-id:${xRequestId};`
+  manifest += `ts:${ts};`
+
   const expected = crypto.createHmac('sha256', secret).update(manifest).digest('hex')
 
   if (expected !== v1) {
-    console.warn('[webhook] signature mismatch — manifest:', manifest)
+    console.warn('[webhook] signature mismatch — manifest: "%s"', manifest)
     return false
   }
 
@@ -130,8 +134,7 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: 'Invalid payment id' }, { status: 400 })
     }
 
-    // Respond 200 immediately — process in background so Vercel never times out
-    after(() => processPayment(paymentId))
+    await processPayment(paymentId)
 
     return new Response(null, { status: 200 })
   } catch (error) {
