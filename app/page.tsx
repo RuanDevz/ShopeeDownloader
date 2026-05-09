@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import ExtractForm from '@/components/ExtractForm'
+import PlatformRecommendation from '@/components/PlatformRecommendation'
 import { getSession } from '@/lib/auth'
 
 export const metadata: Metadata = {
@@ -97,6 +98,7 @@ export default async function LandingPage() {
           {/* URL Input — available immediately for everyone */}
           <div className="bg-white rounded-2xl border border-gray-200 shadow-lg p-4 sm:p-6 mb-6 text-left">
             <ExtractForm large isLoggedIn={!!user} />
+            <PlatformRecommendation />
           </div>
 
           <p className="text-xs text-gray-400">
