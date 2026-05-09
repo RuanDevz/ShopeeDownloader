@@ -42,6 +42,9 @@ export const metadata: Metadata = {
   alternates: {
     canonical: BASE_URL,
   },
+  other: {
+    'google-adsense-account': 'ca-pub-3270764396369088',
+  },
   openGraph: {
     type: 'website',
     locale: 'pt_BR',
