@@ -49,6 +49,10 @@ export default function OgImage() {
 
         <div
           style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            gap: '14px',
             fontSize: '58px',
             fontWeight: 800,
             color: '#111827',
@@ -57,9 +61,9 @@ export default function OgImage() {
             marginBottom: '20px',
           }}
         >
-          Baixe vídeos do{' '}
+          <span>Baixe vídeos do</span>
           <span style={{ color: '#EE4D2D' }}>Shopee</span>
-          {' '}grátis
+          <span>grátis</span>
         </div>
 
         <div

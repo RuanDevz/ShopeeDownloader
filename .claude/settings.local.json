@@ -7,7 +7,8 @@
       "Bash(node -e \"const n = require\\('C:/Users/RuanB/Desktop/Shopee Video Downoad/shopee-video-downloader/node_modules/next/dist/server/index.js'\\); console.log\\(Object.keys\\(n\\).filter\\(k => k.includes\\('fter'\\)\\)\\)\")",
       "Bash(node *)",
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d, indent=2\\)\\)\")",
-      "Bash(xargs grep -l \"metadata\\\\|icon\\\\|favicon\\\\|sitemap\\\\|robots\")"
+      "Bash(xargs grep -l \"metadata\\\\|icon\\\\|favicon\\\\|sitemap\\\\|robots\")",
+      "Bash(npm run *)"
     ]
   }
 }

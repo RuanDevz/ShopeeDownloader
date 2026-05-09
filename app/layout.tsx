@@ -88,6 +88,12 @@ export default function RootLayout({
             gtag('config', 'G-R7FPC68S9Y');
           `}
         </Script>
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3270764396369088"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
         <div className="flex-1">{children}</div>
         <Footer />
       </body>
