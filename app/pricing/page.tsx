@@ -7,12 +7,12 @@ import PixPaymentTrigger from '@/components/PixPaymentTrigger'
 export const metadata: Metadata = {
   title: 'Preços — Downloads Ilimitados a Partir de R$ 8/mês',
   description:
-    'Planos do ShopeeDownloader: grátis com 5 downloads/dia, Mensal R$ 8/mês ou Anual R$ 60/ano para downloads ilimitados de vídeos do Shopee. Ativação instantânea via PIX.',
+    'Planos do CopiarLink: grátis com 5 downloads/dia, Mensal R$ 8/mês ou Anual R$ 60/ano para downloads ilimitados de vídeos do Shopee. Ativação instantânea via PIX.',
   alternates: {
     canonical: 'https://www.shopeedownloader.com/pricing',
   },
   openGraph: {
-    title: 'Preços ShopeeDownloader — Downloads Ilimitados',
+    title: 'Preços CopiarLink — Downloads Ilimitados',
     description: 'Planos a partir de R$ 8/mês para downloads ilimitados de vídeos do Shopee. Ativação via PIX instantânea.',
     url: 'https://www.shopeedownloader.com/pricing',
   },

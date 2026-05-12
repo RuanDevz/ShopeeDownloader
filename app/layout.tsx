@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
     default: 'Shopee Video Downloader — Baixe Vídeos do Shopee Grátis',
-    template: '%s | ShopeeDownloader',
+    template: '%s | CopiarLink',
   },
   description:
     'Baixe vídeos do Shopee online grátis, sem instalar nada. Cole o link e salve em MP4 com qualidade original, sem marca d\'água. Rápido, seguro e fácil.',
@@ -35,9 +35,9 @@ export const metadata: Metadata = {
     'video shopee mp4',
     'como salvar video shopee',
   ],
-  authors: [{ name: 'ShopeeDownloader', url: BASE_URL }],
-  creator: 'ShopeeDownloader',
-  publisher: 'ShopeeDownloader',
+  authors: [{ name: 'CopiarLink', url: BASE_URL }],
+  creator: 'CopiarLink',
+  publisher: 'CopiarLink',
   category: 'technology',
   alternates: {
     canonical: BASE_URL,
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'pt_BR',
     url: BASE_URL,
-    siteName: 'ShopeeDownloader',
+    siteName: 'CopiarLink',
     title: 'Shopee Video Downloader — Baixe Vídeos do Shopee Grátis',
     description:
       'Baixe vídeos do Shopee online grátis, sem instalar nada. Cole o link e salve em MP4 com qualidade original, sem marca d\'água.',

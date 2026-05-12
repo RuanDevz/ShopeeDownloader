@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebApplication',
-  name: 'ShopeeDownloader',
+  name: 'CopiarLink',
   url: 'https://www.shopeedownloader.com',
   description: 'Baixe vídeos do Shopee online grátis, sem instalar nada e sem marca d\'água.',
   applicationCategory: 'UtilityApplication',
@@ -113,7 +113,7 @@ export default async function LandingPage() {
       <section className="py-20 bg-white">
         <div className="max-w-5xl mx-auto px-4">
           <h2 className="text-2xl font-bold text-center text-gray-900 mb-12">
-            Por que usar o ShopeeDownloader?
+            Por que usar o CopiarLink?
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
             {features.map((f) => (
@@ -152,7 +152,7 @@ export default async function LandingPage() {
       <footer className="py-6 border-t border-gray-100">
         <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <p className="text-sm text-gray-400">
-            © {new Date().getFullYear()} ShopeeDownloader. Todos os direitos reservados.
+            © {new Date().getFullYear()} CopiarLink. Todos os direitos reservados.
           </p>
           <Link href="/pricing" className="text-sm text-gray-400 hover:text-gray-600">
             Preços
