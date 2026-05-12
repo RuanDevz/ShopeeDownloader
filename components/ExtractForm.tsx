@@ -33,6 +33,18 @@ export default function ExtractForm({ isLoggedIn = false, large = false }: Extra
   const [showAuthPrompt, setShowAuthPrompt] = useState(false)
   const [isPending, startTransition] = useTransition()
 
+  async function handlePaste() {
+    try {
+      const text = await navigator.clipboard.readText()
+      if (text) {
+        setUrl(text.trim())
+        setError('')
+      }
+    } catch {
+      setError('Não foi possível acessar a área de transferência. Cole manualmente.')
+    }
+  }
+
   function handleExtract() {
     const trimmed = url.trim()
     if (!trimmed) return
@@ -67,19 +79,36 @@ export default function ExtractForm({ isLoggedIn = false, large = false }: Extra
   }
 
   const inputClass = large
-    ? 'flex-1 rounded-xl border border-gray-200 bg-white px-5 py-4 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#EE4D2D] focus:border-transparent shadow-sm'
-    : 'flex-1 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#EE4D2D] focus:border-transparent'
+    ? 'w-full rounded-xl border border-gray-200 bg-white pl-5 pr-24 py-4 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#EE4D2D] focus:border-transparent shadow-sm'
+    : 'w-full rounded-xl border border-gray-200 bg-white pl-4 pr-20 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#EE4D2D] focus:border-transparent'
+
+  const pasteBtnClass = large
+    ? 'absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 active:bg-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition-colors'
+    : 'absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1 rounded-lg bg-gray-100 hover:bg-gray-200 active:bg-gray-300 px-2.5 py-1.5 text-xs font-medium text-gray-700 transition-colors'
 
   return (
     <div className="w-full space-y-4">
       <div className={`flex gap-3 ${large ? 'flex-col sm:flex-row' : 'flex-row'}`}>
-        <input
-          className={inputClass}
-          placeholder="Cole o link do Shopee aqui..."
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && !isPending && handleExtract()}
-        />
+        <div className="relative flex-1">
+          <input
+            className={inputClass}
+            placeholder="Cole o link do Shopee aqui..."
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && !isPending && handleExtract()}
+          />
+          <button
+            type="button"
+            onClick={handlePaste}
+            className={pasteBtnClass}
+            aria-label="Colar link"
+          >
+            <svg className={large ? 'w-4 h-4' : 'w-3.5 h-3.5'} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            Colar
+          </button>
+        </div>
         <Button
           onClick={handleExtract}
           loading={isPending}
