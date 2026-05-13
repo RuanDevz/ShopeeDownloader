@@ -29,7 +29,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               </svg>
             </div>
             <span className="font-bold text-gray-900 text-lg">
-              Shopee<span className="text-[#EE4D2D]">Downloader</span>
+              Copiar<span className="text-[#EE4D2D]">Link</span>
             </span>
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">Entrar</h1>
