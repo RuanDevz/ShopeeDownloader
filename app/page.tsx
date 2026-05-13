@@ -10,12 +10,12 @@ export const metadata: Metadata = {
   description:
     'Baixe vídeos do Shopee online grátis, sem instalar nada e sem marca d\'água. Cole qualquer link de produto Shopee e salve o vídeo em MP4 com qualidade original em segundos.',
   alternates: {
-    canonical: 'https://www.shopeedownloader.com',
+    canonical: 'https://www.copiarlink.com',
   },
   openGraph: {
     title: 'Shopee Video Downloader — Baixe Vídeos do Shopee Grátis',
     description: 'Cole o link do Shopee e baixe o vídeo em MP4, sem marca d\'água, sem instalar nada.',
-    url: 'https://www.shopeedownloader.com',
+    url: 'https://www.copiarlink.com',
   },
 }
 
@@ -23,7 +23,7 @@ const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebApplication',
   name: 'CopiarLink',
-  url: 'https://www.shopeedownloader.com',
+  url: 'https://www.copiarlink.com',
   description: 'Baixe vídeos do Shopee online grátis, sem instalar nada e sem marca d\'água.',
   applicationCategory: 'UtilityApplication',
   operatingSystem: 'All',

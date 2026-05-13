@@ -3,7 +3,7 @@ import Script from "next/script";
 import "./globals.css";
 import Footer from "@/components/Footer";
 
-const BASE_URL = 'https://www.shopeedownloader.com'
+const BASE_URL = 'https://www.copiarlink.com'
 
 export const viewport: Viewport = {
   width: 'device-width',

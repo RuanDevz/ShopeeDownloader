@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next'
 
-const BASE_URL = 'https://www.shopeedownloader.com'
+const BASE_URL = 'https://www.copiarlink.com'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [

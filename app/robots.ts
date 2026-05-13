@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/api/', '/dashboard/', '/admin/'],
     },
-    sitemap: 'https://www.shopeedownloader.com/sitemap.xml',
+    sitemap: 'https://www.copiarlink.com/sitemap.xml',
   }
 }

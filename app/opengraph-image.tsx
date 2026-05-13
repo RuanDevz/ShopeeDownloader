@@ -112,7 +112,7 @@ export default function OgImage() {
             fontWeight: 500,
           }}
         >
-          shopeedownloader.com
+          copiarlink.com
         </div>
       </div>
     ),
